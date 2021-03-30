@@ -5,6 +5,10 @@ module Pay
         processor == "stripe"
       end
 
+      def metered?
+        false
+      end
+
       def stripe_cancel
         subscription = processor_subscription
         subscription.cancel_at_period_end = true
@@ -38,7 +42,7 @@ module Pay
         subscription.plan = plan
         subscription.prorate = prorate
         subscription.trial_end = on_trial? ? trial_ends_at.to_i : 'now'
-        subscription.quantity = quantity if quantity?
+        subscription.quantity = quantity if (quantity? && !metered?)
         subscription.save
       rescue ::Stripe::StripeError => e
         raise Error, e.message
